@@ -1,138 +1,200 @@
 import streamlit as st
 import numpy as np
 import pickle
-import sklearn  # ensure scikit-learn loads correctly
+import sklearn  # needed so unpickling the model works
 
-# ---------- LOAD THE TRAINED MODEL ----------
+
+# --------- LOAD TRAINED MODEL ----------
 with open("student_performance_model.pkl", "rb") as f:
     model = pickle.load(f)
 
-def predict_pass_probability(study_hours, sleep_hours, attendance):
-    X = np.array([[study_hours, sleep_hours, attendance]])
-    prob = model.predict_proba(X)[0, 1]
-    return float(prob)
 
-# ---------- PAGE CONFIG ----------
+def predict_pass_probability(study_hours, sleep_hours, attendance):
+    """Return probability of passing (0–1) and class label."""
+    X = np.array([[study_hours, sleep_hours, attendance]])
+    prob_pass = model.predict_proba(X)[0, 1]
+    label = "Pass" if prob_pass >= 0.5 else "Fail"
+    return float(prob_pass), label
+
+
+# --------- PAGE CONFIG ----------
 st.set_page_config(
     page_title="AI Learns from Student Performance",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
 )
 
-# ---------- CUSTOM CSS ----------
+# --------- SIMPLE STYLING ----------
 CUSTOM_CSS = """
 <style>
-.main {
-    background-color: #f7f5f5;
+.stApp {
+    background: linear-gradient(135deg, #f8f6ff 0%, #fdfcf6 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
 }
-h1, h2, h3 {
-    color: #2b2c6f;
-    font-family: 'Helvetica', sans-serif;
+
+h1 {
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: #252554;
 }
+
+h2, h3 {
+    color: #33345c;
+}
+
+.top-subtitle {
+    font-size: 0.95rem;
+    color: #55557a;
+}
+
+/* Card style */
 .card {
     padding: 1.2rem 1.4rem;
     background-color: #ffffff;
-    border-radius: 0.8rem;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 0 10px rgba(0,0,0,0.02);
+    border-radius: 1rem;
+    border: 1px solid #e2ddff;
+    box-shadow: 0 8px 18px rgba(68, 58, 150, 0.06);
     font-size: 0.95rem;
 }
-.subtitle {
-    color: #5f61e6;
+
+/* Section labels */
+.section-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #6b5bf3;
     font-weight: 700;
-    font-size: 1.0rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.3rem;
 }
-.small-label {
-    font-size: 0.85rem;
-    color: #666666;
-}
+
+/* Probability pill */
 .prob-pill {
     display: inline-block;
-    padding: 0.4rem 0.8rem;
+    padding: 0.25rem 0.75rem;
     border-radius: 999px;
-    background-color: #f8f0ff;
+    background-color: #f2ebff;
     border: 1px dashed #7a4bff;
     font-weight: 600;
     color: #4e3299;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
 }
+
+/* Inputs */
+.stNumberInput > label {
+    font-size: 0.9rem;
+    color: #3b3b5f;
+    font-weight: 600;
+}
+
+/* Predict button */
+.stButton > button {
+    width: 100%;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6f5cf5, #ff9fd8);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.9rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 6px 15px rgba(111, 92, 245, 0.35);
+}
+.stButton > button:hover {
+    filter: brightness(1.05);
+}
+
+/* Footer */
 .footer {
     margin-top: 2rem;
     font-size: 0.8rem;
-    color: #888888;
+    color: #9b99b5;
     text-align: center;
+}
+
+/* Mobile spacing */
+@media (max-width: 900px) {
+    .block-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
 }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-# ---------- LAYOUT ----------
+# --------- PAGE CONTENT (SHORT VERSION) ----------
 st.title("AI Learns from Student Performance")
-st.markdown("### Probability & Statistics – Math Fair Project")
-st.markdown("**Instructor:** Dr. Najma Saleem  &nbsp;&nbsp; • &nbsp;&nbsp; **Course:** Probability & Statistics_202")
+st.markdown(
+    '<p class="top-subtitle">'
+    '<b>Probability &amp; Statistics – Math Fair Project</b><br>'
+    'Instructor: Dr. Najma Saleem &nbsp; • &nbsp; '
+    'Course: Probability &amp; Statistics_202'
+    '</p>',
+    unsafe_allow_html=True,
+)
 
 st.write("---")
 
 col1, col2, col3 = st.columns([1.1, 1, 1.1])
 
-# ---- LEFT ----
+# ---- LEFT: WHAT THE AI DOES ----
 with col1:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Introduction")
+    st.markdown('<p class="section-label">Overview</p>', unsafe_allow_html=True)
+    st.markdown("### What this AI does")
     st.write(
-        "This project shows how **AI can learn from probability**. "
-        "We use student-style data (study hours, sleep, and attendance) "
-        "to train a model that predicts whether a student is likely to **pass or fail**. "
-        "It connects probability, data analysis, and AI decision-making."
+        "- Uses **study hours**, **sleep hours**, and **attendance**.\n"
+        "- Outputs a prediction: **Pass** or **Fail**.\n"
+        "- Shows a **probability** between 0 and 1 for passing."
     )
-
-    st.markdown("### Problem Statement")
     st.write(
-        "Students differ in their study habits, sleep hours, and class attendance. "
-        "These differences affect academic performance. "
-        "Our question: **Can an AI model learn these patterns and predict pass/fail outcomes?**"
+        "The goal is to show how probability and simple data can power an AI model."
     )
-
-    st.markdown('<span class="subtitle">Dataset & Features</span>', unsafe_allow_html=True)
-    st.write("- Study Hours per day\n"
-             "- Sleep Hours per night\n"
-             "- Attendance (%)\n"
-             "- Final Result (Pass/Fail)")
-
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ---- MIDDLE ----
+# ---- MIDDLE: FEATURES (VERY SHORT) ----
 with col2:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### How the AI Learns")
+    st.markdown('<p class="section-label">Inputs</p>', unsafe_allow_html=True)
+    st.markdown("### Features used by the model")
     st.write(
-        "- The AI looks for **patterns** in the data.\n"
-        "- It learns which combinations of study hours, sleep, and attendance usually lead to **passing**.\n"
-        "- It then uses **probability** to estimate the chance that a new student will pass."
+        "- **Study Hours per day** (average)\n"
+        "- **Sleep Hours per night** (average)\n"
+        "- **Attendance (%)**"
     )
-
-    st.markdown('<p class="prob-pill">Importance of Probability</p>', unsafe_allow_html=True)
-    st.write(
-        "The model outputs a **probability** between 0 and 1. "
-        "This shows how statistics and probability power AI."
+    st.markdown(
+        '<span class="prob-pill">Model output: probability of passing</span>',
+        unsafe_allow_html=True,
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ---- RIGHT ----
+# ---- RIGHT: DEMO ----
 with col3:
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### Try the AI Demo")
+    st.markdown('<p class="section-label">Demo</p>', unsafe_allow_html=True)
+    st.markdown("### Try the AI")
 
-    study = st.number_input("Study Hours", min_value=0.0, max_value=12.0, value=3.0, step=0.5)
-    sleep = st.number_input("Sleep Hours", min_value=0.0, max_value=12.0, value=6.0, step=0.5)
-    attendance = st.number_input("Attendance (%)", min_value=0, max_value=100, value=80, step=5)
+    study = st.number_input(
+        "Study hours per day", min_value=0.0, max_value=12.0, value=3.0, step=0.5
+    )
+    sleep = st.number_input(
+        "Sleep hours per night", min_value=0.0, max_value=12.0, value=6.0, step=0.5
+    )
+    attendance = st.number_input(
+        "Attendance (%)", min_value=0, max_value=100, value=80, step=5
+    )
 
     if st.button("Predict"):
-        prob = predict_pass_probability(study, sleep, attendance)
-        label = "Pass" if prob >= 0.5 else "Fail"
+        prob, label = predict_pass_probability(study, sleep, attendance)
         st.success(f"Prediction: **{label}**")
-        st.write(f"Confidence: **{prob:.2f}**")
+        st.write(f"Probability of passing: **{prob:.2f}**")
+    else:
+        st.info("Set the values and click **Predict** to see the result.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div class='footer'>AI Learning from Student Performance</div>", unsafe_allow_html=True)
+# ---- FOOTER ----
+st.markdown(
+    "<div class='footer'>Full explanation of the project is on our poster at the Math Fair.</div>",
+    unsafe_allow_html=True,
+)
