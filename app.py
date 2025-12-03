@@ -29,22 +29,23 @@ body {
 
 /* Main header */
 .main-title {
-    font-size: 50px;
+    font-size: 44px;
     font-weight: 900;
     color: #5b2aff;
     text-shadow: 1px 1px 3px #cfc4ff;
+    margin-bottom: 0.3rem;
 }
 
-/* Section titles */
+/* Section titles under the line */
 .section-label {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
     color: #6f3cff;
     letter-spacing: 2px;
     margin-bottom: 10px;
 }
 
-/* Card styling */
+/* Card styling around text/content */
 .card {
     background: #ffffff;
     padding: 20px 25px;
@@ -78,7 +79,7 @@ body {
     transform: scale(1.05);
 }
 
-/* Result box */
+/* Result boxes */
 .result-pass {
     background-color: #e6ffe9;
     padding: 15px;
@@ -98,12 +99,10 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-
 # =========================
 # Header
 # =========================
-st.markdown("<h1 class='main-title'>AI Learns from Student Performance</h1>", unsafe_allow_html=True)
-
+st.markdown("<h1 class='main-title'>Student Performance AI</h1>", unsafe_allow_html=True)
 st.write("**Probability & Statistics – Math Fair Project**")
 st.write("Instructor: Dr. Najma Saleem • Course: Probability & Statistics_202")
 
@@ -123,7 +122,7 @@ with col1:
     st.write(
         "- Uses **study hours**, **sleep hours**, and **attendance**.\n"
         "- Predicts if a student will **Pass** or **Fail**.\n"
-        "- Outputs a **probability** between 0 and 1."
+        "- Outputs a **probability** between 0 and 1 for passing."
     )
     st.write("Shows how simple data + probability can power an AI model.")
 
@@ -141,7 +140,10 @@ with col2:
         "- **Attendance (%)**"
     )
 
-    st.markdown('<span class="prob-pill">Model output: probability of passing</span>', unsafe_allow_html=True)
+    st.markdown(
+        '<span class="prob-pill">Model output: probability of passing</span>',
+        unsafe_allow_html=True,
+    )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -152,20 +154,38 @@ with col3:
 
     st.markdown("### Try the AI")
 
-    study = st.number_input("Study hours per day", min_value=0.0, max_value=12.0, step=1.0, value=3.0)
-    sleep = st.number_input("Sleep hours per night", min_value=0.0, max_value=12.0, step=1.0, value=6.0)
-    attendance = st.number_input("Attendance (%)", min_value=0, max_value=100, step=1, value=80)
+    study = st.number_input(
+        "Study hours per day",
+        min_value=0.0,
+        max_value=12.0,
+        step=1.0,
+        value=3.0,
+    )
+    sleep = st.number_input(
+        "Sleep hours per night",
+        min_value=0.0,
+        max_value=12.0,
+        step=1.0,
+        value=6.0,
+    )
+    attendance = st.number_input(
+        "Attendance (%)",
+        min_value=0,
+        max_value=100,
+        step=1,
+        value=80,
+    )
 
     if st.button("Predict"):
-        data = np.array([[study, sleep, attendance]])
-        prob = model.predict_proba(data)[0][1]
-        pred = "Pass" if prob >= 0.5 else "Fail"
+        X = np.array([[study, sleep, attendance]])
+        prob_pass = model.predict_proba(X)[0][1]
+        prediction = "Pass" if prob_pass >= 0.5 else "Fail"
 
-        if pred == "Pass":
-            st.markdown(f"<div class='result-pass'>Prediction: Pass</div>", unsafe_allow_html=True)
+        if prediction == "Pass":
+            st.markdown("<div class='result-pass'>Prediction: Pass</div>", unsafe_allow_html=True)
         else:
-            st.markdown(f"<div class='result-fail'>Prediction: Fail</div>", unsafe_allow_html=True)
+            st.markdown("<div class='result-fail'>Prediction: Fail</div>", unsafe_allow_html=True)
 
-        st.write(f"**Probability of passing: {prob:.2f}**")
+        st.write(f"**Probability of passing: {prob_pass:.2f}**")
 
     st.markdown("</div>", unsafe_allow_html=True)
